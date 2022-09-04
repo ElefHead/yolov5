@@ -157,6 +157,8 @@ class Loggers():
         # Callback runs on train epoch end
         if self.wandb:
             self.wandb.current_epoch = epoch + 1
+        if self.mlflow:
+            self.mlflow.current_epoch = epoch + 1
 
     def on_val_image_end(self, pred, predn, path, names, im):
         # Callback runs on val image end
@@ -175,6 +177,16 @@ class Loggers():
                 self.clearml.log_debug_samples(files, title='Validation')
             if self.mlflow:
                 [self.mlflow.log_artifacts(f, "validation") for f in files if f.exists()]
+
+    def on_val_end_compute_metrics(self, names, ap50, ap, f1, p, r):
+        # log metrics for each class for every epoch
+        if self.mlflow:
+            for i in range(0, len(names)):
+                self.mlflow.log_metric(f"{names[i]}_mAP_0.5", ap50[i])
+                self.mlflow.log_metric(f"{names[i]}_mAP_0.5-0.95", ap[i])
+                self.mlflow.log_metric(f"{names[i]}_f1-score", f1[i])
+                self.mlflow.log_metric(f"{names[i]}_precision", p[i])
+                self.mlflow.log_metric(f"{names[i]}_recall", r[i])
 
     def on_fit_epoch_end(self, vals, epoch, best_fitness, fi):
         # Callback runs at the end of each fit (train+val) epoch

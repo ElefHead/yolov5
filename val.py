@@ -277,7 +277,9 @@ def run(
         ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
         mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
 
-        callbacks.run('on_val_end_compute_metrics', names, ap50, ap, f1, p, r)
+        available_names = [names[c] for c in ap_class]
+                   
+        callbacks.run('on_val_end_compute_metrics', available_names, ap50, ap, f1, p, r)
 
     nt = np.bincount(stats[3].astype(int), minlength=nc)  # number of targets per class
 
